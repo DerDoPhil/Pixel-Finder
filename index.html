@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>DoPhil's Pixel Hunter</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Silkscreen:wght@400;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:       #EFEFEF;
+      --bg2:      #E4E4E4;
+      --ink:      #121212;
+      --ink2:     #555555;
+      --border:   #121212;
+      --ff-head:  'Silkscreen', monospace;
+      --ff-body:  'Space Mono', monospace;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--ink);
+      font-family: var(--ff-body);
+      font-size: 12px;
+      letter-spacing: 0.04em;
+      min-height: 100vh;
+    }
+    body.dark {
+      --bg:     #111111;
+      --bg2:    #1a1a1a;
+      --ink:    #EFEFEF;
+      --ink2:   #888888;
+      --border: #EFEFEF;
+    }
+
+    /* scrollbar */
+    ::-webkit-scrollbar { width: 4px; }
+    ::-webkit-scrollbar-track { background: var(--bg2); }
+    ::-webkit-scrollbar-thumb { background: var(--ink2); }
+
+    /* NAV */
+    nav {
+      position: sticky; top: 0; z-index: 100;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; height: 48px;
+    }
+    .nav-logo {
+      font-family: var(--ff-head);
+      font-size: 13px;
+      color: var(--ink);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      cursor: default;
+    }
+    .nav-icons { display: flex; gap: 6px; align-items: center; }
+    .nav-icon-btn {
+      background: none; border: 1px solid transparent;
+      width: 30px; height: 30px;
+      display: flex; align-items: center; justify-content: center;
+      cursor: pointer; color: var(--ink);
+      transition: border-color 0.1s;
+      font-size: 14px;
+    }
+    .nav-icon-btn:hover { border-color: var(--border); }
+
+    /* LAYOUT */
+    .page { max-width: 1200px; margin: 0 auto; padding: 0 32px; }
+
+    /* HERO */
+    .hero {
+      padding: 72px 0 56px;
+      border-bottom: 1px solid var(--border);
+    }
+    .hero-label {
+      font-family: var(--ff-body);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      color: var(--ink2);
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: var(--ff-head);
+      font-size: clamp(28px, 5vw, 52px);
+      text-transform: uppercase;
+      line-height: 1.1;
+      letter-spacing: 0.04em;
+      color: var(--ink);
+      margin-bottom: 24px;
+    }
+    .hero-sub {
+      font-family: var(--ff-body);
+      font-size: 11px;
+      color: var(--ink2);
+      line-height: 2;
+      letter-spacing: 0.06em;
+      max-width: 560px;
+      margin-bottom: 36px;
+    }
+    .hero-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+
+    /* BUTTONS */
+    .btn {
+      font-family: var(--ff-body);
+      font-size: 10px;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      background: none;
+      border: 1px solid var(--border);
+      color: var(--ink);
+      padding: 10px 20px;
+      cursor: pointer;
+      display: inline-flex; align-items: center; gap: 8px;
+      transition: background 0.1s, color 0.1s;
+      border-radius: 0;
+    }
+    .btn:hover { background: var(--ink); color: var(--bg); }
+    .btn-fill { background: var(--ink); color: var(--bg); }
+    .btn-fill:hover { background: var(--bg); color: var(--ink); }
+    .btn-sm { padding: 6px 12px; font-size: 9px; }
+
+    /* STATS ROW */
+    .stats-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+      border-bottom: 1px solid var(--border);
+    }
+    .stat-cell {
+      padding: 20px 24px;
+      border-right: 1px solid var(--border);
+    }
+    .stat-cell:last-child { border-right: none; }
+    .stat-label {
+      font-size: 8px; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--ink2); margin-bottom: 6px;
+    }
+    .stat-value {
+      font-family: var(--ff-head);
+      font-size: 16px; color: var(--ink); letter-spacing: 0.02em;
+    }
+    .stat-sub { font-size: 8px; color: var(--ink2); margin-top: 3px; }
+
+    /* FORMULA */
+    .formula-section {
+      padding: 40px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .section-label {
+      font-size: 9px; letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--ink2); margin-bottom: 24px; display: flex; gap: 10px; align-items: center;
+    }
+    .section-label::after { content:""; flex:1; height:1px; background: var(--border); opacity: 0.2; }
+    .formula-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 0;
+      border: 1px solid var(--border);
+    }
+    .formula-cell {
+      padding: 20px 22px;
+      border-right: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+    }
+    .formula-cell:nth-child(3), .formula-cell:nth-child(4) { border-bottom: none; }
+    .formula-cell:last-child, .formula-cell:nth-child(2) { border-right: none; }
+    .formula-cell-label {
+      font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase;
+      color: var(--ink2); margin-bottom: 8px;
+    }
+    .formula-cell-body { font-size: 10px; line-height: 1.8; color: var(--ink); }
+    .formula-cell-body b { font-weight: 700; }
+
+    /* FILTERS */
+    .filters-bar {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+    }
+    .filter-group { display: flex; align-items: center; gap: 6px; }
+    .filter-label { font-size: 8px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink2); white-space: nowrap; }
+    input[type=text], input[type=number] {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--ink);
+      font-family: var(--ff-body);
+      font-size: 10px;
+      padding: 7px 10px;
+      outline: none;
+      letter-spacing: 0.04em;
+      border-radius: 0;
+      width: 120px;
+    }
+    input[type=text]:focus, input[type=number]:focus { outline: 2px solid var(--ink); outline-offset: -2px; }
+    .toggle-btn {
+      font-family: var(--ff-body);
+      font-size: 9px; letter-spacing: 0.08em; text-transform: uppercase;
+      background: none; border: 1px solid var(--border);
+      color: var(--ink2); padding: 6px 10px; cursor: pointer; border-radius: 0;
+      transition: all 0.1s;
+    }
+    .toggle-btn.active { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+    .results-count { margin-left: auto; font-size: 9px; color: var(--ink2); letter-spacing: 0.08em; }
+
+    /* TOP 3 */
+    .top3-section { padding: 32px 0; border-bottom: 1px solid var(--border); }
+    .top3-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 0; border: 1px solid var(--border); }
+    .top3-card {
+      padding: 20px 22px;
+      border-right: 1px solid var(--border);
+      cursor: pointer;
+      display: flex; gap: 16px; align-items: flex-start;
+      transition: background 0.1s;
+    }
+    .top3-card:last-child { border-right: none; }
+    .top3-card:hover { background: var(--ink); color: var(--bg); }
+    .top3-card:hover .top3-sub, .top3-card:hover .top3-ap { color: rgba(255,255,255,0.5); }
+    .top3-medal { font-size: 24px; line-height: 1; }
+    .top3-name { font-family: var(--ff-head); font-size: 12px; text-transform: uppercase; margin-bottom: 4px; }
+    .top3-price { font-family: var(--ff-head); font-size: 18px; letter-spacing: 0.02em; margin-bottom: 4px; }
+    .top3-sub { font-size: 8px; color: var(--ink2); line-height: 1.8; }
+    .top3-ap { font-size: 8px; color: var(--ink2); }
+
+    /* PROGRESS */
+    .progress-bar-wrap { padding: 16px 0; }
+    .progress-bar-info { display: flex; justify-content: space-between; font-size: 8px; letter-spacing: 0.1em; color: var(--ink2); margin-bottom: 6px; text-transform: uppercase; }
+    .progress-track { height: 2px; background: var(--bg2); border: 1px solid var(--border); }
+    .progress-fill { height: 100%; background: var(--ink); transition: width 0.3s ease; }
+
+    /* LOADING */
+    .loading-state { padding: 80px 0; text-align: center; }
+    .blink { animation: blink 1s infinite; }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.1} }
+    .loading-text { font-size: 11px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--ink2); margin-top: 12px; }
+
+    /* ERROR */
+    .error-box {
+      border: 1px solid var(--border); padding: 24px; max-width: 600px; margin: 32px 0;
+    }
+    .error-title { font-family: var(--ff-head); font-size: 13px; text-transform: uppercase; margin-bottom: 12px; }
+    .error-body { font-size: 9px; line-height: 1.9; color: var(--ink2); white-space: pre-wrap; }
+
+    /* NFT GRID */
+    .nft-section { padding: 32px 0; }
+    .nft-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); }
+    .nft-card {
+      background: var(--bg);
+      cursor: pointer;
+      transition: background 0.1s;
+      display: flex; flex-direction: column;
+      animation: fadeIn 0.3s ease both;
+    }
+    .nft-card:hover { background: var(--ink); color: var(--bg); }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+
+    .nft-img-wrap { position: relative; aspect-ratio: 1/1; background: var(--bg2); overflow: hidden; }
+    .nft-img-wrap img { width:100%; height:100%; object-fit:cover; image-rendering:pixelated; display:block; filter: grayscale(100%); }
+    .nft-card:hover .nft-img-wrap img { filter: grayscale(100%) invert(1); }
+    .nft-badge-tl { position:absolute; top:8px; left:8px; display:flex; gap:4px; }
+    .nft-badge-tr { position:absolute; top:8px; right:8px; }
+    .badge {
+      font-family: var(--ff-body); font-size: 8px; letter-spacing: 0.06em;
+      background: var(--bg); color: var(--ink); border: 1px solid var(--border);
+      padding: 2px 5px; text-transform: uppercase;
+    }
+    .badge-inv { background: var(--ink); color: var(--bg); }
+    .nft-card:hover .badge { background: var(--ink); color: var(--bg); }
+    .nft-card:hover .badge-inv { background: var(--bg); color: var(--ink); }
+    .nft-overlay {
+      position:absolute; inset:0; background: rgba(0,0,0,0.0);
+      display:flex; align-items:center; justify-content:center;
+      font-size:9px; letter-spacing:0.12em; text-transform:uppercase;
+      opacity:0; transition: opacity 0.15s;
+    }
+    .nft-card:hover .nft-overlay { opacity:1; }
+
+    .nft-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 8px; flex:1; }
+    .nft-name { font-family: var(--ff-head); font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; }
+    .nft-price-row { display:flex; align-items:baseline; gap:8px; }
+    .nft-eth { font-family: var(--ff-head); font-size: 15px; letter-spacing: 0.02em; }
+    .nft-usd { font-size: 9px; color: var(--ink2); }
+    .nft-card:hover .nft-usd { color: rgba(255,255,255,0.5); }
+
+    .px-bar-wrap { display: flex; flex-direction: column; gap: 3px; }
+    .px-bar-info { display: flex; justify-content: space-between; font-size: 8px; color: var(--ink2); letter-spacing: 0.06em; text-transform: uppercase; }
+    .nft-card:hover .px-bar-info { color: rgba(255,255,255,0.5); }
+    .px-track { height: 2px; background: rgba(0,0,0,0.12); border: 1px solid var(--border); }
+    .nft-card:hover .px-track { background: rgba(255,255,255,0.15); border-color: rgba(255,255,255,0.3); }
+    .px-fill { height: 100%; background: var(--ink); transition: width 0.5s ease; }
+    .nft-card:hover .px-fill { background: var(--bg); }
+
+    .cpp-box {
+      border: 1px solid var(--border);
+      display: flex; gap: 0;
+    }
+    .cpp-half {
+      flex:1; padding: 8px 10px; border-right: 1px solid var(--border);
+    }
+    .cpp-half:last-child { border-right: none; }
+    .cpp-label { font-size: 7px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink2); margin-bottom: 3px; }
+    .cpp-val { font-family: var(--ff-head); font-size: 13px; letter-spacing: 0.02em; }
+    .cpp-sub { font-size: 7px; color: var(--ink2); margin-top: 2px; }
+    .nft-card:hover .cpp-box { border-color: rgba(255,255,255,0.3); }
+    .nft-card:hover .cpp-half { border-color: rgba(255,255,255,0.3); }
+    .nft-card:hover .cpp-label { color: rgba(255,255,255,0.4); }
+    .nft-card:hover .cpp-sub { color: rgba(255,255,255,0.4); }
+
+    .ap-tags { display:flex; flex-wrap:wrap; gap:3px; }
+    .ap-tag { font-size: 7px; letter-spacing: 0.06em; text-transform: uppercase; border: 1px solid var(--border); padding: 1px 5px; color: var(--ink2); }
+    .nft-card:hover .ap-tag { border-color: rgba(255,255,255,0.3); color: rgba(255,255,255,0.5); }
+
+    .deal-bar-wrap { display:flex; flex-direction:column; gap:3px; }
+    .deal-bar-info { display:flex; justify-content:space-between; font-size:8px; color:var(--ink2); text-transform:uppercase; letter-spacing:0.06em; }
+    .nft-card:hover .deal-bar-info { color: rgba(255,255,255,0.4); }
+    .deal-track { height:2px; background:rgba(0,0,0,0.1); border:1px solid var(--border); }
+    .nft-card:hover .deal-track { background:rgba(255,255,255,0.15); border-color:rgba(255,255,255,0.2); }
+    .deal-fill { height:100%; background: var(--ink); transition: width 0.5s ease; }
+    .nft-card:hover .deal-fill { background: var(--bg); }
+
+    /* SKELETON */
+    .skeleton-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:1px; background:var(--border); border:1px solid var(--border); margin-top:1px; }
+    .skeleton-card { background:var(--bg); opacity:0.5; }
+    .skeleton-img { aspect-ratio:1/1; background: var(--bg2); animation: pulse 1.5s ease infinite; }
+    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+    .skeleton-body { padding:12px 14px; display:flex; flex-direction:column; gap:8px; }
+    .skeleton-line { background:var(--bg2); height:10px; animation: pulse 1.5s ease infinite; }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--border);
+      padding: 24px 32px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 12px;
+    }
+    .footer-text { font-size: 8px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink2); }
+  </style>
+</head>
+<body>
+<div id="root"></div>
+<script type="text/babel">
+
+const OPENSEA_KEY = "8e94b5cf550d4689aa7f76e93ccb706f";
+const SLUG        = "normies";
+const NORMIES_API = "https://api.normies.art";
+const CONTRACT    = "0x9eb6e2025b64f340691e424b7fe7022ffde12438";
+
+const TIERS = [
+  { id:1, label:"T1", min:0,   max:490,      minPct:1, maxPct:4 },
+  { id:2, label:"T2", min:491, max:890,      minPct:2, maxPct:4 },
+  { id:3, label:"T3", min:891, max:Infinity, minPct:3, maxPct:4 },
+];
+function getTier(px) { return TIERS.find(t => px >= t.min && px <= t.max) || TIERS[0]; }
+
+function calcCPP(px, ap, eth, usd) {
+  const tier     = getTier(px);
+  const priceUsd = eth * usd;
+  const newMin   = Math.floor(px * tier.minPct / 100);
+  const newMax   = Math.floor(px * tier.maxPct / 100);
+  const totMin   = (ap||0) + newMin;
+  const totMax   = (ap||0) + newMax;
+  return { tier, priceUsd, newMin, newMax, totMin, totMax,
+    best:  totMax > 0 ? priceUsd / totMax : Infinity,
+    worst: totMin > 0 ? priceUsd / totMin : Infinity,
+  };
+}
+
+async function fetchJ(url, opts={}) {
+  const r = await fetch(url, opts);
+  if (!r.ok) throw new Error(`HTTP ${r.status}`);
+  return r.json();
+}
+async function fetchEthUsd() {
+  try { const d = await fetchJ("https://api.coingecko.com/api/v3/simple/price?ids=ethereum&vs_currencies=usd"); return d?.ethereum?.usd ?? null; }
+  catch { try { const d = await fetchJ("https://api.coinbase.com/v2/prices/ETH-USD/spot"); return parseFloat(d?.data?.amount)||null; } catch { return null; } }
+}
+const H = { "X-API-KEY": OPENSEA_KEY, accept: "application/json" };
+const apiListings = () => fetchJ(`https://api.opensea.io/api/v2/listings/collection/${SLUG}/all?limit=50&order_by=eth_price&order_direction=asc`, {headers:H});
+const apiStats    = () => fetchJ(`https://api.opensea.io/api/v2/collections/${SLUG}/stats`, {headers:H});
+const apiMeta     = (id) => fetchJ(`${NORMIES_API}/normie/${id}/metadata`);
+
+function parseEth(l) { try { return parseFloat(l.price?.current?.value) / Math.pow(10, l.price?.current?.decimals??18); } catch { return null; } }
+function parseTok(l) { try { return l.protocol_data?.parameters?.offer?.[0]?.identifierOrCriteria; } catch { return null; } }
+
+const $  = (n) => !isFinite(n)||n==null ? "—" : n<0.01?`$${n.toFixed(4)}`:n<1?`$${n.toFixed(3)}`:`$${n.toFixed(2)}`;
+const Ξ  = (n) => n==null ? "—" : `${parseFloat(n).toFixed(4)} ETH`;
+const N  = (n) => n?.toLocaleString() ?? "—";
+
+// ── NFT Card ──────────────────────────────────────────────────────────────────
+function NFTCard({ item, rank, ethUsd, bestCPP }) {
+  const [hov, setHov] = React.useState(false);
+  const { tokenId, priceEth, pixelCount, existingAP, traits, imageUrl, loading, error } = item;
+  const c   = (pixelCount!=null&&priceEth&&ethUsd) ? calcCPP(pixelCount,existingAP||0,priceEth,ethUsd) : null;
+  const rel = c && bestCPP>0 ? Math.min(1, bestCPP/c.best) : 0;
+
+  return (
+    <div className="nft-card"
+      onMouseEnter={()=>setHov(true)} onMouseLeave={()=>setHov(false)}
+      onClick={()=>window.open(`https://opensea.io/assets/ethereum/${CONTRACT}/${tokenId}`,"_blank")}
+      style={{animationDelay:`${Math.min(rank-1,12)*25}ms`}}
+    >
+      <div className="nft-img-wrap">
+        <div className="nft-badge-tl">
+          <span className="badge">#{rank}</span>
+          {rank<=3 && <span className="badge badge-inv">TOP</span>}
+        </div>
+        {existingAP>0 && <div className="nft-badge-tr"><span className="badge badge-inv">{existingAP} AP</span></div>}
+        {imageUrl
+          ? <img src={imageUrl} alt={`#${tokenId}`}/>
+          : loading
+            ? <div className="skeleton-img"/>
+            : <div style={{width:"100%",height:"100%",display:"flex",alignItems:"center",justifyContent:"center",fontSize:24,color:"var(--ink2)"}}>?</div>
+        }
+        <div className="nft-overlay">OPENSEA ↗</div>
+      </div>
+
+      <div className="nft-body">
+        <div className="nft-name">Normie #{tokenId}</div>
+        <div className="nft-price-row">
+          <span className="nft-eth">{Ξ(priceEth)}</span>
+          {ethUsd&&priceEth&&<span className="nft-usd">≈ {$(priceEth*ethUsd)}</span>}
+        </div>
+
+        {loading && (
+          <div style={{display:"flex",flexDirection:"column",gap:6}}>
+            {[70,50,85].map((w,i)=><div key={i} className="skeleton-line" style={{width:`${w}%`,animationDelay:`${i*0.1}s`}}/>)}
+          </div>
+        )}
+
+        {!loading&&!error&&c&&(<>
+          <div className="px-bar-wrap">
+            <div className="px-bar-info">
+              <span>PIXELS</span><span>{pixelCount} / 1600 · {c.tier.label}</span>
+            </div>
+            <div className="px-track"><div className="px-fill" style={{width:`${(pixelCount/1600)*100}%`}}/></div>
+          </div>
+
+          <div className="cpp-box">
+            <div className="cpp-half">
+              <div className="cpp-label">BEST (4% luck)</div>
+              <div className="cpp-val">{$(c.best)}/px</div>
+              <div className="cpp-sub">{c.totMax} AP total</div>
+            </div>
+            <div className="cpp-half">
+              <div className="cpp-label">WORST ({c.tier.minPct}% luck)</div>
+              <div className="cpp-val">{$(c.worst)}/px</div>
+              <div className="cpp-sub">{c.totMin} AP total</div>
+            </div>
+          </div>
+
+          <div className="ap-tags">
+            {existingAP>0&&<span className="ap-tag">+{existingAP} existing AP</span>}
+            <span className="ap-tag">+{c.newMin}–{c.newMax} from burn</span>
+            <span className="ap-tag">= {c.totMin}–{c.totMax} total</span>
+          </div>
+
+          <div className="deal-bar-wrap">
+            <div className="deal-bar-info">
+              <span>DEAL QUALITY</span><span>{(rel*100).toFixed(0)}% of best</span>
+            </div>
+            <div className="deal-track"><div className="deal-fill" style={{width:`${rel*100}%`}}/></div>
+          </div>
+
+          {traits?.length>0&&(
+            <div className="ap-tags">
+              {traits.slice(0,3).map((t,i)=><span key={i} className="ap-tag">{t.value}</span>)}
+            </div>
+          )}
+        </>)}
+
+        {!loading&&error&&<div style={{fontSize:8,color:"var(--ink2)"}}>METADATA UNAVAILABLE</div>}
+      </div>
+    </div>
+  );
+}
+
+// ── Main ──────────────────────────────────────────────────────────────────────
+function App() {
+  const [dark,        setDark]        = React.useState(false);
+  const [items,       setItems]       = React.useState([]);
+  const [ethUsd,      setEthUsd]      = React.useState(null);
+  const [floor,       setFloor]       = React.useState(null);
+  const [floorSym,    setFloorSym]    = React.useState("ETH");
+  const [vol24,       setVol24]       = React.useState(null);
+  const [owners,      setOwners]      = React.useState(null);
+  const [status,      setStatus]      = React.useState("idle");
+  const [loadError,   setLoadError]   = React.useState(null);
+  const [loaded,      setLoaded]      = React.useState(0);
+  const [total,       setTotal]       = React.useState(0);
+  const [lastSync,    setLastSync]    = React.useState(null);
+  const [search,      setSearch]      = React.useState("");
+  const [sortBy,      setSortBy]      = React.useState("best");
+  const [tierFilter,  setTierFilter]  = React.useState(0);
+  const [maxEth,      setMaxEth]      = React.useState("");
+  const [onlyAP,      setOnlyAP]      = React.useState(false);
+
+  React.useEffect(() => {
+    document.body.classList.toggle("dark", dark);
+  }, [dark]);
+
+  const load = React.useCallback(async () => {
+    setStatus("loading"); setLoadError(null); setItems([]);
+    setLoaded(0); setTotal(0);
+    const [ep] = await Promise.all([
+      fetchEthUsd().catch(()=>null),
+      apiStats().then(s => {
+        setFloor(s?.total?.floor_price);
+        setFloorSym(s?.total?.floor_price_symbol||"ETH");
+        setVol24(s?.total?.one_day_volume);
+        setOwners(s?.total?.num_owners);
+      }).catch(()=>null),
+    ]);
+    setEthUsd(ep);
+
+    let listings = [];
+    try {
+      const data = await apiListings();
+      listings = (data.listings||[]).map(l=>({tokenId:parseTok(l),priceEth:parseEth(l)})).filter(i=>i.tokenId!=null&&i.priceEth>0);
+    } catch(e) {
+      setLoadError("COULD NOT LOAD OPENSEA LISTINGS\n\nCause: CORS blocked by browser.\n\nThis works fine when deployed on Vercel.\nLocally: install a CORS browser extension.\n\n"+e.message);
+      setStatus("error"); return;
+    }
+
+    const sk = listings.map(i=>({...i,loading:true}));
+    setItems(sk); setTotal(sk.length); setStatus("done"); setLastSync(new Date());
+
+    const enriched = [...sk]; let done = 0;
+    await Promise.all(sk.map(async(item,idx) => {
+      try {
+        const meta  = await apiMeta(item.tokenId);
+        const attrs = meta.attributes||[];
+        const px = parseInt(attrs.find(a=>a.trait_type==="Pixel Count")?.value)||null;
+        const ap = (() => {
+          const a = attrs.find(a=>typeof a.trait_type==="string"&&(
+            a.trait_type.toLowerCase().includes("action point")||
+            a.trait_type.toLowerCase()==="ap"||
+            a.trait_type.toLowerCase().includes("canvas point")
+          ));
+          return a?parseInt(a.value)||0:0;
+        })();
+        const traits = attrs.filter(a=>a.trait_type!=="Pixel Count"&&a.trait_type!=="Level"&&typeof a.value==="string");
+        enriched[idx] = {...item,loading:false,pixelCount:px,existingAP:ap,traits,imageUrl:`${NORMIES_API}/normie/${item.tokenId}/image.png`};
+      } catch { enriched[idx]={...item,loading:false,error:true}; }
+      done++; setLoaded(done); setItems([...enriched]);
+    }));
+  }, []);
+
+  React.useEffect(() => { load(); }, []);
+
+  const displayed = React.useMemo(() => {
+    let list = items.filter(i=>!i.loading&&!i.error&&i.pixelCount!=null&&i.priceEth!=null);
+    if (search.trim()) list = list.filter(i=>String(i.tokenId).includes(search.trim()));
+    if (maxEth&&parseFloat(maxEth)>0) list = list.filter(i=>i.priceEth<=parseFloat(maxEth));
+    if (tierFilter>0) { const t=TIERS[tierFilter-1]; list=list.filter(i=>i.pixelCount>=t.min&&i.pixelCount<=t.max); }
+    if (onlyAP) list = list.filter(i=>(i.existingAP||0)>0);
+    list.sort((a,b) => {
+      const ca = ethUsd?calcCPP(a.pixelCount,a.existingAP||0,a.priceEth,ethUsd):null;
+      const cb = ethUsd?calcCPP(b.pixelCount,b.existingAP||0,b.priceEth,ethUsd):null;
+      if(sortBy==="best")   return (ca?.best ??999)-(cb?.best ??999);
+      if(sortBy==="worst")  return (ca?.worst??999)-(cb?.worst??999);
+      if(sortBy==="price")  return a.priceEth-b.priceEth;
+      if(sortBy==="pixels") return b.pixelCount-a.pixelCount;
+      return 0;
+    });
+    return list;
+  }, [items, search, maxEth, tierFilter, onlyAP, sortBy, ethUsd]);
+
+  const bestCPP = React.useMemo(() => {
+    if (!ethUsd||!displayed.length) return 1;
+    const cs = displayed.map(i=>calcCPP(i.pixelCount,i.existingAP||0,i.priceEth,ethUsd).best).filter(isFinite);
+    return cs.length?Math.min(...cs):1;
+  }, [displayed, ethUsd]);
+
+  const inProgress = loaded<total && status==="done";
+  const medals = ["#1","#2","#3"];
+
+  return (
+    <div>
+      {/* NAV */}
+      <nav>
+        <div className="nav-logo">DoPhil's Pixel Hunter</div>
+        <div className="nav-icons">
+          <button className="nav-icon-btn" title="X / Twitter" onClick={()=>window.open("https://x.com","_blank")}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.26 5.632 5.905-5.632zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          </button>
+          <button className="nav-icon-btn" title="OpenSea" onClick={()=>window.open(`https://opensea.io/collection/${SLUG}`,"_blank")}>
+            <svg width="14" height="14" viewBox="0 0 90 90" fill="currentColor"><path d="M45 0C20.151 0 0 20.151 0 45C0 69.849 20.151 90 45 90C69.849 90 90 69.849 90 45C90 20.151 69.849 0 45 0ZM22.203 46.512L22.392 46.206L34.101 27.891C34.272 27.63 34.677 27.657 34.808 27.945C36.901 32.826 38.699 38.907 37.863 42.774C37.511 44.34 36.501 46.458 35.355 48.39C35.2 48.678 35.028 48.96 34.848 49.23C34.755 49.368 34.596 49.446 34.428 49.446H22.536C22.212 49.446 22.023 49.098 22.203 48.828V46.512ZM74.166 52.6C74.166 52.78 74.064 52.942 73.908 53.017C73.137 53.397 70.6 54.652 69.581 56.072C66.924 59.807 64.938 65.2 60.606 65.2H43.5C37.236 65.2 32.166 60.096 32.166 53.79V53.367C32.166 53.187 32.31 53.04 32.49 53.04H45.576C45.783 53.04 45.936 53.232 45.918 53.436C45.846 54.132 45.972 54.84 46.29 55.47C46.914 56.724 48.195 57.522 49.599 57.522H56.88V53.454H50.184C49.854 53.454 49.653 53.07 49.842 52.794C49.911 52.686 49.986 52.572 50.067 52.452C50.664 51.576 51.519 50.22 52.368 48.678C52.941 47.64 53.496 46.53 53.94 45.42C54.024 45.216 54.096 45.006 54.168 44.796C54.288 44.4 54.408 44.028 54.498 43.656C54.588 43.32 54.666 42.966 54.726 42.63C54.906 41.484 54.978 40.248 54.978 38.976C54.978 38.448 54.954 37.896 54.906 37.374C54.882 36.834 54.81 36.3 54.738 35.766C54.684 35.298 54.594 34.836 54.492 34.368C54.354 33.666 54.18 32.97 53.982 32.274L53.913 32.004C53.751 31.422 53.574 30.852 53.382 30.282C52.791 28.458 52.098 26.694 51.369 25.044C51.111 24.432 50.838 23.85 50.565 23.292C50.157 22.422 49.74 21.618 49.347 20.862C49.146 20.484 48.96 20.13 48.78 19.77C48.576 19.371 48.366 18.978 48.162 18.598C48.021 18.33 47.862 18.072 47.745 17.814L46.488 15.534C46.317 15.219 46.626 14.85 46.965 14.958L54.751 17.178C54.849 17.208 54.93 17.268 54.987 17.346C55.251 17.712 55.497 18.09 55.725 18.48C55.935 18.846 56.139 19.218 56.331 19.596C56.721 20.352 57.081 21.132 57.405 21.918C57.726 22.698 58.023 23.496 58.287 24.294C58.644 25.38 58.935 26.472 59.157 27.564C59.247 27.996 59.322 28.44 59.382 28.878C59.568 30.156 59.652 31.446 59.634 32.736C59.628 33.264 59.604 33.78 59.556 34.302C59.508 34.836 59.436 35.37 59.34 35.892C59.244 36.426 59.124 36.954 58.98 37.476C58.842 37.998 58.68 38.508 58.494 39.012C58.302 39.504 58.086 39.984 57.852 40.458C57.618 40.938 57.366 41.406 57.096 41.862C56.844 42.318 56.574 42.756 56.298 43.182C55.998 43.62 55.686 44.04 55.362 44.448C55.044 44.85 54.714 45.24 54.372 45.612C53.64 46.38 52.866 47.094 52.05 47.742H56.88V43.698H62.154C62.64 43.698 63.108 43.854 63.492 44.136L73.632 51.534C73.95 51.762 74.166 52.158 74.166 52.6Z"/></svg>
+          </button>
+          <button className="nav-icon-btn" title="Toggle Dark Mode" onClick={()=>setDark(d=>!d)}>
+            {dark
+              ? <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+              : <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+            }
+          </button>
+        </div>
+      </nav>
+
+      <div className="page">
+
+        {/* HERO */}
+        <div className="hero">
+          <div className="hero-label">Normies NFT · Burn Value Calculator · On-Chain Data</div>
+          <h1>DoPhil's<br/>Pixel Hunter</h1>
+          <p className="hero-sub">
+            Find the cheapest action points on the market.<br/>
+            Every listing is scored by real cost-per-pixel in USD,<br/>
+            accounting for burn luck, existing AP, and pixel tier.
+          </p>
+          <div className="hero-actions">
+            <button className="btn btn-fill" onClick={load}>↺ REFRESH DATA →</button>
+            <button className="btn" onClick={()=>window.open(`https://opensea.io/collection/${SLUG}`,"_blank")}>VIEW COLLECTION →</button>
+            {lastSync&&<span style={{fontSize:9,color:"var(--ink2)",letterSpacing:"0.08em"}}>LAST SYNC: {lastSync.toLocaleTimeString()}</span>}
+          </div>
+        </div>
+
+        {/* STATS */}
+        <div className="stats-row">
+          <div className="stat-cell">
+            <div className="stat-label">Floor Price</div>
+            <div className="stat-value">{floor?`${parseFloat(floor).toFixed(4)}`:"—"}</div>
+            <div className="stat-sub">{floorSym}</div>
+          </div>
+          <div className="stat-cell">
+            <div className="stat-label">Floor USD</div>
+            <div className="stat-value">{floor&&ethUsd?$(parseFloat(floor)*ethUsd):"—"}</div>
+            <div className="stat-sub">Live rate</div>
+          </div>
+          <div className="stat-cell">
+            <div className="stat-label">ETH Price</div>
+            <div className="stat-value">{ethUsd?`$${ethUsd.toLocaleString()}`:"—"}</div>
+            <div className="stat-sub">CoinGecko</div>
+          </div>
+          <div className="stat-cell">
+            <div className="stat-label">24H Volume</div>
+            <div className="stat-value">{vol24?parseFloat(vol24).toFixed(2):"—"}</div>
+            <div className="stat-sub">{floorSym}</div>
+          </div>
+          <div className="stat-cell">
+            <div className="stat-label">Owners</div>
+            <div className="stat-value">{owners?N(owners):"—"}</div>
+            <div className="stat-sub">Unique wallets</div>
+          </div>
+          <div className="stat-cell">
+            <div className="stat-label">Listings</div>
+            <div className="stat-value">{total||"—"}</div>
+            <div className="stat-sub">Scanned</div>
+          </div>
+        </div>
+
+        {/* FORMULA */}
+        <div className="formula-section">
+          <div className="section-label">How Cost-Per-Pixel Is Calculated</div>
+          <div className="formula-grid">
+            <div className="formula-cell">
+              <div className="formula-cell-label">Best Case (4% luck)</div>
+              <div className="formula-cell-body">Price (USD) ÷ (existing AP + pixels × <b>4%</b>)<br/>Assumes maximum luck on reveal.</div>
+            </div>
+            <div className="formula-cell">
+              <div className="formula-cell-label">Worst Case (min% luck)</div>
+              <div className="formula-cell-body">Price (USD) ÷ (existing AP + pixels × <b>tier min%</b>)<br/>Assumes minimum luck on reveal.</div>
+            </div>
+            <div className="formula-cell" style={{borderBottom:"none"}}>
+              <div className="formula-cell-label">Existing AP</div>
+              <div className="formula-cell-body">Already burned into this NFT. Reduces your effective cost per pixel. Read directly from on-chain metadata.</div>
+            </div>
+            <div className="formula-cell" style={{borderBottom:"none",borderRight:"none"}}>
+              <div className="formula-cell-label">Burn Tiers</div>
+              <div className="formula-cell-body">
+                <b>T1</b> 0–490px → 1%–4% AP<br/>
+                <b>T2</b> 491–890px → 2%–4% AP<br/>
+                <b>T3</b> 891–1600px → 3%–4% AP
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* FILTERS */}
+        <div className="filters-bar">
+          <div className="filter-group">
+            <span className="filter-label">Search</span>
+            <input type="text" value={search} onChange={e=>setSearch(e.target.value)} placeholder="Token ID..."/>
+          </div>
+          <div className="filter-group">
+            <span className="filter-label">Max ETH</span>
+            <input type="number" value={maxEth} onChange={e=>setMaxEth(e.target.value)} placeholder="0.05" step="0.005" min="0" style={{width:90}}/>
+          </div>
+          <div className="filter-group">
+            <span className="filter-label">Sort</span>
+            {[{k:"best",l:"$/PX BEST"},{k:"worst",l:"$/PX WORST"},{k:"price",l:"PRICE"},{k:"pixels",l:"PIXELS"}].map(s=>(
+              <button key={s.k} className={`toggle-btn${sortBy===s.k?" active":""}`} onClick={()=>setSortBy(s.k)}>{s.l}</button>
+            ))}
+          </div>
+          <div className="filter-group">
+            <span className="filter-label">Tier</span>
+            {[{id:0,l:"ALL"},...TIERS.map(t=>({id:t.id,l:t.label}))].map(f=>(
+              <button key={f.id} className={`toggle-btn${tierFilter===f.id?" active":""}`} onClick={()=>setTierFilter(f.id)}>{f.l}</button>
+            ))}
+          </div>
+          <button className={`toggle-btn${onlyAP?" active":""}`} onClick={()=>setOnlyAP(v=>!v)}>WITH AP ONLY</button>
+          <span className="results-count">{displayed.length} RESULTS</span>
+        </div>
+
+        {/* TOP 3 */}
+        {displayed.length>=3&&ethUsd&&(
+          <div className="top3-section">
+            <div className="section-label">Top 3 Deals — Best Cost Per Pixel</div>
+            <div className="top3-grid">
+              {displayed.slice(0,3).map((item,i)=>{
+                const c=calcCPP(item.pixelCount,item.existingAP||0,item.priceEth,ethUsd);
+                return (
+                  <div key={item.tokenId} className="top3-card"
+                    onClick={()=>window.open(`https://opensea.io/assets/ethereum/${CONTRACT}/${item.tokenId}`,"_blank")}>
+                    <div className="top3-medal">{["🥇","🥈","🥉"][i]}</div>
+                    <div>
+                      <div className="top3-name">Normie #{item.tokenId}</div>
+                      <div className="top3-price">{$(c.best)} / px</div>
+                      <div className="top3-sub">{Ξ(item.priceEth)} · {item.pixelCount}px · {c.totMax} AP max</div>
+                      {item.existingAP>0&&<div className="top3-ap">+{item.existingAP} existing AP included</div>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* PROGRESS */}
+        {inProgress&&(
+          <div className="progress-bar-wrap">
+            <div className="progress-bar-info">
+              <span>Loading pixel data from Normies API...</span>
+              <span>{loaded} / {total}</span>
+            </div>
+            <div className="progress-track">
+              <div className="progress-fill" style={{width:`${(loaded/total)*100}%`}}/>
+            </div>
+          </div>
+        )}
+
+        {/* LOADING */}
+        {status==="loading"&&items.length===0&&(
+          <div className="loading-state">
+            <div style={{fontFamily:"var(--ff-head)",fontSize:28}} className="blink">▌</div>
+            <div className="loading-text">Connecting to OpenSea + CoinGecko...</div>
+          </div>
+        )}
+
+        {/* ERROR */}
+        {status==="error"&&(
+          <div className="error-box">
+            <div className="error-title">⚠ Failed to Load</div>
+            <div className="error-body">{loadError}</div>
+            <button className="btn btn-sm" style={{marginTop:16}} onClick={load}>RETRY →</button>
+          </div>
+        )}
+
+        {/* NFT GRID */}
+        {displayed.length>0&&(
+          <div className="nft-section">
+            <div className="section-label">{displayed.length} Listings — Sorted by {sortBy==="best"?"$/px Best":sortBy==="worst"?"$/px Worst":sortBy==="price"?"Price":"Pixels"}</div>
+            <div className="nft-grid">
+              {displayed.map((item,idx)=>(
+                <NFTCard key={item.tokenId} item={item} rank={idx+1} ethUsd={ethUsd} bestCPP={bestCPP}/>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* SKELETONS */}
+        {items.filter(i=>i.loading).length>0&&(
+          <div className="skeleton-grid">
+            {items.filter(i=>i.loading).slice(0,8).map((item,i)=>(
+              <div key={item.tokenId} className="skeleton-card">
+                <div className="skeleton-img" style={{animationDelay:`${i*0.08}s`}}/>
+                <div className="skeleton-body">
+                  <div className="skeleton-line" style={{width:"60%"}}/>
+                  <div className="skeleton-line" style={{width:"80%"}}/>
+                  <div className="skeleton-line" style={{width:"45%"}}/>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {status==="done"&&displayed.length===0&&loaded===total&&total>0&&(
+          <div style={{padding:"60px 0",textAlign:"center",fontSize:10,color:"var(--ink2)",letterSpacing:"0.1em",textTransform:"uppercase"}}>No listings match your filters.</div>
+        )}
+
+      </div>
+
+      {/* FOOTER */}
+      <footer>
+        <span className="footer-text">DoPhil's Pixel Hunter · Normies NFT · On-Chain Data</span>
+        <span className="footer-text">{CONTRACT.slice(0,14)}... · api.normies.art · OpenSea API</span>
+        {lastSync&&<span className="footer-text">Last sync: {lastSync.toLocaleTimeString()}</span>}
+      </footer>
+    </div>
+  );
+}
+
+ReactDOM.createRoot(document.getElementById('root')).render(<App/>);
+</script>
+</body>
+</html>
